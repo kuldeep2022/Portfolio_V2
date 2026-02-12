@@ -39,3 +39,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# diagnostic/test scripts
+list-all-models.js
+list-all-models.log
+list-models-v2.js
+test-gemini-2-001.js
+test-gemini-2-lite.js
+test-gemini-2.js
+test-gemini-25.js
+test-targeted-models.js
+test-user-model.js
+inspect-result.js
+*.js.log
