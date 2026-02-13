@@ -31,7 +31,7 @@ export function AIChat() {
     setStreamingContent("");
     
     try {
-      const response = await fetch("/api/chat", {
+      const response = await fetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: userMessage.content }),
@@ -63,9 +63,9 @@ export function AIChat() {
         const text = await response.text();
         setMessages(prev => [...prev, { role: "assistant", content: text, id: Date.now().toString() }]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error calling complete:", error);
-      setError("Connection issue. Please try again.");
+      setError(error.message || "Connection issue. Please try again.");
     } finally {
       setIsLoading(false);
       setStreamingContent("");
