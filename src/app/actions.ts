@@ -21,6 +21,8 @@ export type ContactState = {
   };
 };
 
+import nodemailer from "nodemailer";
+
 export async function sendContactEmail(
   prevState: ContactState,
   formData: FormData
@@ -48,22 +50,64 @@ export async function sendContactEmail(
     page: "portfolio_v2",
   };
 
-  const webhookUrl = process.env.MAKE_WEBHOOK_URL;
-  if (webhookUrl) {
+  const emailUser = process.env.CONTACT_EMAIL_USER;
+  const emailPass = process.env.CONTACT_EMAIL_PASS;
+
+  if (emailUser && emailPass) {
     try {
-      const response = await fetch(webhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: emailUser,
+          pass: emailPass,
+        },
       });
-      if (!response.ok) {
-        console.error("Webhook error:", response.status);
-      }
+
+      const mailOptions = {
+        from: emailUser,
+        to: "davekuldeep98@gmail.com",
+        subject: `New Portfolio Contact: ${payload.name}`,
+        text: `
+Name: ${payload.name}
+Email: ${payload.email}
+Company: ${payload.company || "N/A"}
+Phone: ${payload.phone || "N/A"}
+Source: ${payload.source}
+Sent At: ${payload.submittedAt}
+
+Message:
+${payload.message}
+        `,
+        replyTo: payload.email,
+      };
+
+      await transporter.sendMail(mailOptions);
     } catch (error) {
-      console.error("Webhook request failed:", error);
+      console.error("Email delivery failed:", error);
+      return {
+        success: false,
+        message: "Failed to send email. Please try again later.",
+      };
     }
   } else {
-    console.log("MAKE_WEBHOOK_URL not set. Payload:", payload);
+    // Fallback to webhook if configured, otherwise log
+    const webhookUrl = process.env.MAKE_WEBHOOK_URL;
+    if (webhookUrl) {
+      try {
+        const response = await fetch(webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!response.ok) {
+          console.error("Webhook error:", response.status);
+        }
+      } catch (error) {
+        console.error("Webhook request failed:", error);
+      }
+    } else {
+      console.log("No email configuration found. Payload:", payload);
+    }
   }
 
   return {
