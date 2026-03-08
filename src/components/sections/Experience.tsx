@@ -8,23 +8,29 @@ const experiences = [
   {
     company: "Meta",
     role: "Software Engineer 2",
-    period: "2025 - Present",
-    description: "Architecting the next generation of social connection at scale.",
-    color: "bg-blue-600",
+    period: "2025 — Present",
+    description:
+      "Architecting the next generation of social connection at scale. Building AI-powered systems that serve billions of users worldwide.",
+    highlights: ["AI Systems", "Distributed Computing", "React Native"],
+    accent: "#6f9cff",
   },
   {
     company: "General Motors",
     role: "Software Engineer 2",
-    period: "2022 - 2025",
-    description: "Revolutionized legacy mobility systems, boosting productivity by 40%.",
-    color: "bg-neutral-800",
+    period: "2022 — 2025",
+    description:
+      "Revolutionized legacy mobility systems, boosting team productivity by 40%. Led cloud migration of critical automotive platforms.",
+    highlights: ["Cloud Migration", "Azure DevOps", "Microservices"],
+    accent: "#ff62a8",
   },
   {
     company: "Binary Republik",
     role: "Junior Developer",
     period: "2021",
-    description: "Built robust enterprise applications with React & cloud tech.",
-    color: "bg-neutral-900",
+    description:
+      "Built robust enterprise applications with React & cloud technologies. Delivered 12+ client projects with 100% on-time delivery.",
+    highlights: ["React", "Node.js", "Enterprise Apps"],
+    accent: "#6cfcca",
   },
 ];
 
@@ -34,13 +40,14 @@ export function Experience() {
     target: containerRef,
     offset: ["start start", "end end"],
   });
+
   const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
     const card = event.currentTarget;
     const rect = card.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    const rx = ((y - rect.height / 2) / rect.height) * -8;
-    const ry = ((x - rect.width / 2) / rect.width) * 8;
+    const rx = ((y - rect.height / 2) / rect.height) * -6;
+    const ry = ((x - rect.width / 2) / rect.width) * 6;
     card.style.setProperty("--rx", `${rx}deg`);
     card.style.setProperty("--ry", `${ry}deg`);
     card.style.setProperty("--mx", `${x}px`);
@@ -54,64 +61,113 @@ export function Experience() {
   };
 
   return (
-    <motion.section
+    <section
       ref={containerRef}
       id="experience"
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.9, ease: "easeOut" }}
-      className="bg-black text-white"
+      className="bg-[#030306] text-white relative"
     >
       <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="max-w-7xl w-full px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center"
-        >
-          <div>
-            <h2 className="text-4xl md:text-7xl font-bold tracking-tighter mb-8 text-gradient">
-              The Journey.
+        <div className="max-w-7xl w-full px-6 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+          {/* Left side - Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            <div className="floating-label mb-4 font-mono">
+              // Career Timeline
+            </div>
+            <h2 className="text-4xl md:text-7xl font-bold tracking-tighter mb-6">
+              <span className="text-gradient">The Journey</span>
+              <span className="text-gradient-multi">.</span>
             </h2>
-            <p className="text-xl text-neutral-300 max-w-md">
-              A timeline of relentless innovation with a focus on AI and scalable systems.
+            <p className="text-lg text-neutral-400 max-w-md leading-relaxed">
+              A timeline of relentless innovation — from enterprise apps to
+              AI-powered systems at the world&apos;s most impactful companies.
             </p>
-          </div>
-          
-          <div className="relative h-[400px]">
+
+            {/* Stats */}
+            <div className="mt-10 grid grid-cols-3 gap-6">
+              {[
+                { value: "4+", label: "Years" },
+                { value: "20+", label: "Projects" },
+                { value: "3", label: "Companies" },
+              ].map((stat) => (
+                <div key={stat.label}>
+                  <div className="text-2xl md:text-3xl font-bold text-white">
+                    {stat.value}
+                  </div>
+                  <div className="text-xs text-neutral-500 uppercase tracking-wider mt-1 font-mono">
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Right side - Cards */}
+          <div className="relative h-[420px]">
             {experiences.map((exp, index) => {
-              // Calculate opacity and scale based on scroll position for each card
               const start = index / experiences.length;
               const end = (index + 1) / experiences.length;
-              
-              const opacity = useTransform(scrollYProgress, [start, start + 0.1, end - 0.1, end], [0, 1, 1, 0]);
-              const y = useTransform(scrollYProgress, [start, end], [50, -50]);
-              
+              const cardOpacity = useTransform(
+                scrollYProgress,
+                [start, start + 0.1, end - 0.1, end],
+                [0, 1, 1, 0]
+              );
+              const cardY = useTransform(scrollYProgress, [start, end], [60, -60]);
+
               return (
                 <motion.div
                   key={index}
-                  style={{ opacity, y }}
+                  style={{ opacity: cardOpacity, y: cardY }}
                   onMouseMove={handleMouseMove}
                   onMouseLeave={handleMouseLeave}
-                  className="absolute inset-0 flex flex-col justify-center p-8 rounded-3xl glow-card neon-border tilt-card"
+                  className="absolute inset-0 flex flex-col justify-center p-8 md:p-10 rounded-3xl glow-card neon-border tilt-card"
                 >
-                  <span className="text-sm font-medium text-blue-400 mb-2">{exp.period}</span>
-                  <h3 className="text-3xl font-bold mb-1">{exp.company}</h3>
-                  <h4 className="text-xl text-neutral-300 mb-4">{exp.role}</h4>
-                  <p className="text-lg text-neutral-400 leading-relaxed">
+                  {/* Period badge */}
+                  <div
+                    className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] w-fit mb-5"
+                  >
+                    <div
+                      className="w-1.5 h-1.5 rounded-full"
+                      style={{ background: exp.accent, boxShadow: `0 0 8px ${exp.accent}` }}
+                    />
+                    <span className="text-xs font-mono text-neutral-400">
+                      {exp.period}
+                    </span>
+                  </div>
+
+                  <h3 className="text-3xl md:text-4xl font-bold mb-1 tracking-tight">
+                    {exp.company}
+                  </h3>
+                  <h4 className="text-lg text-neutral-400 mb-5">{exp.role}</h4>
+                  <p className="text-neutral-500 leading-relaxed mb-6 text-sm md:text-base">
                     {exp.description}
                   </p>
+
+                  {/* Highlight tags */}
+                  <div className="flex flex-wrap gap-2">
+                    {exp.highlights.map((h) => (
+                      <span
+                        key={h}
+                        className="px-3 py-1 rounded-full text-[10px] uppercase tracking-[0.15em] font-mono border border-white/[0.06] bg-white/[0.02]"
+                        style={{ color: exp.accent }}
+                      >
+                        {h}
+                      </span>
+                    ))}
+                  </div>
                 </motion.div>
               );
             })}
           </div>
-        </motion.div>
+        </div>
       </div>
-      
-      {/* Spacer to allow scrolling through the sticky section */}
+
+      {/* Spacer for sticky scroll */}
       <div className="h-[300vh]" />
-    </motion.section>
+    </section>
   );
 }

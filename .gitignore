@@ -52,3 +52,4 @@ test-targeted-models.js
 test-user-model.js
 inspect-result.js
 *.js.log
+.env*.local
