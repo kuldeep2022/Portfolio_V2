@@ -1,8 +1,8 @@
 "use client";
 
 import type React from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring } from "framer-motion";
+import { useRef, useEffect } from "react";
 
 const experiences = [
   {
@@ -33,6 +33,39 @@ const experiences = [
     accent: "#6cfcca",
   },
 ];
+
+function AnimatedStat({ value, suffix, label }: { value: number; suffix: string; label: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-50px" });
+  const motionValue = useMotionValue(0);
+  const springValue = useSpring(motionValue, { damping: 40, stiffness: 100 });
+
+  useEffect(() => {
+    if (isInView) {
+      motionValue.set(value);
+    }
+  }, [isInView, motionValue, value]);
+
+  useEffect(() => {
+    const unsubscribe = springValue.on("change", (latest) => {
+      if (ref.current) {
+        ref.current.textContent = `${Math.round(latest)}${suffix}`;
+      }
+    });
+    return unsubscribe;
+  }, [springValue, suffix]);
+
+  return (
+    <div>
+      <div ref={ref} className="text-2xl md:text-3xl font-bold text-white tabular-nums">
+        0{suffix}
+      </div>
+      <div className="text-xs text-neutral-500 uppercase tracking-wider mt-1 font-mono">
+        {label}
+      </div>
+    </div>
+  );
+}
 
 export function Experience() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -87,21 +120,14 @@ export function Experience() {
               AI-powered systems at the world&apos;s most impactful companies.
             </p>
 
-            {/* Stats */}
+            {/* Animated Stats */}
             <div className="mt-10 grid grid-cols-3 gap-6">
               {[
-                { value: "4+", label: "Years" },
-                { value: "20+", label: "Projects" },
-                { value: "3", label: "Companies" },
+                { value: 4, suffix: "+", label: "Years" },
+                { value: 20, suffix: "+", label: "Projects" },
+                { value: 3, suffix: "", label: "Companies" },
               ].map((stat) => (
-                <div key={stat.label}>
-                  <div className="text-2xl md:text-3xl font-bold text-white">
-                    {stat.value}
-                  </div>
-                  <div className="text-xs text-neutral-500 uppercase tracking-wider mt-1 font-mono">
-                    {stat.label}
-                  </div>
-                </div>
+                <AnimatedStat key={stat.label} {...stat} />
               ))}
             </div>
           </motion.div>
