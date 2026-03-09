@@ -39,92 +39,120 @@ function useTypingEffect(words: string[], typingSpeed = 80, deletingSpeed = 40, 
   return text;
 }
 
-// Particle grid canvas
+// Optimized particle grid — grid-neighbor connections O(n) instead of O(n²),
+// HiDPI canvas, passive listeners, avoids sqrt where possible
 function ParticleGrid() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    // Skip on touch devices — particles aren't interactive without a mouse
+    if (window.matchMedia("(pointer: coarse)").matches) return;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
     let animationId: number;
     let mouseX = 0;
     let mouseY = 0;
+    let width = 0;
+    let height = 0;
+    let cols = 0;
+
+    type Particle = { x: number; y: number; baseX: number; baseY: number };
+    let particles: Particle[] = [];
+
+    const SPACING = 55;
+    const MAX_DIST = 180;
+    const MAX_DIST_SQ = MAX_DIST * MAX_DIST;
+    const CONN_DIST = 70;
+    const CONN_DIST_SQ = CONN_DIST * CONN_DIST;
 
     const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const dpr = Math.min(window.devicePixelRatio, 2);
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      cols = Math.floor(width / SPACING);
+      const rows = Math.floor(height / SPACING);
+      particles = [];
+      for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows; j++) {
+          const x = (i + 0.5) * (width / cols);
+          const y = (j + 0.5) * (height / rows);
+          particles.push({ x, y, baseX: x, baseY: y });
+        }
+      }
     };
 
     resize();
-    window.addEventListener("resize", resize);
+    window.addEventListener("resize", resize, { passive: true });
+    window.addEventListener("mousemove", (e) => { mouseX = e.clientX; mouseY = e.clientY; }, { passive: true });
 
-    const handleMouseMove = (e: MouseEvent) => {
-      mouseX = e.clientX;
-      mouseY = e.clientY;
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-
-    const cols = Math.floor(canvas.width / 50);
-    const rows = Math.floor(canvas.height / 50);
-
-    const particles: { x: number; y: number; baseX: number; baseY: number }[] = [];
-    for (let i = 0; i < cols; i++) {
-      for (let j = 0; j < rows; j++) {
-        const x = (i + 0.5) * (canvas.width / cols);
-        const y = (j + 0.5) * (canvas.height / rows);
-        particles.push({ x, y, baseX: x, baseY: y });
-      }
-    }
+    // Pre-create style strings to avoid per-frame string allocation
+    const FILL_DIM = "rgba(111,156,255,0.08)";
+    const STROKE_DIM = "rgba(111,156,255,0.03)";
 
     const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, width, height);
 
-      for (const p of particles) {
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
         const dx = mouseX - p.baseX;
         const dy = mouseY - p.baseY;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const maxDist = 180;
+        const distSq = dx * dx + dy * dy;
 
-        if (dist < maxDist) {
-          const force = (1 - dist / maxDist) * 15;
+        if (distSq < MAX_DIST_SQ) {
+          const dist = Math.sqrt(distSq);
+          const ratio = 1 - dist / MAX_DIST;
+          const force = ratio * 15;
           p.x = p.baseX + (dx / dist) * force;
           p.y = p.baseY + (dy / dist) * force;
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 1.5 + ratio * 1.5, 0, 6.2832);
+          ctx.fillStyle = `rgba(111,156,255,${(0.15 + ratio * 0.4).toFixed(2)})`;
+          ctx.fill();
         } else {
           p.x += (p.baseX - p.x) * 0.08;
           p.y += (p.baseY - p.y) * 0.08;
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 1, 0, 6.2832);
+          ctx.fillStyle = FILL_DIM;
+          ctx.fill();
         }
-
-        const alpha = dist < maxDist ? 0.15 + (1 - dist / maxDist) * 0.4 : 0.08;
-        const size = dist < maxDist ? 1.5 + (1 - dist / maxDist) * 1.5 : 1;
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(111, 156, 255, ${alpha})`;
-        ctx.fill();
       }
 
-      // Draw connections between nearby particles
+      // Connections — only check right and below neighbors (grid topology)
+      ctx.lineWidth = 0.5;
       for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          if (dist < 70) {
-            const mdx = mouseX - (particles[i].x + particles[j].x) / 2;
-            const mdy = mouseY - (particles[i].y + particles[j].y) / 2;
-            const mDist = Math.sqrt(mdx * mdx + mdy * mdy);
-            const alpha = mDist < 180 ? 0.08 + (1 - mDist / 180) * 0.15 : 0.03;
-
+        const p1 = particles[i];
+        const neighbors = [i + 1, i + cols];
+        for (const j of neighbors) {
+          if (j >= particles.length) continue;
+          const p2 = particles[j];
+          const cdx = p1.x - p2.x;
+          const cdy = p1.y - p2.y;
+          if (cdx * cdx + cdy * cdy < CONN_DIST_SQ) {
+            const mx = (p1.x + p2.x) * 0.5;
+            const my = (p1.y + p2.y) * 0.5;
+            const mdSq = (mouseX - mx) ** 2 + (mouseY - my) ** 2;
+            if (mdSq < MAX_DIST_SQ) {
+              const md = Math.sqrt(mdSq);
+              ctx.strokeStyle = `rgba(111,156,255,${(0.08 + (1 - md / MAX_DIST) * 0.15).toFixed(2)})`;
+            } else {
+              ctx.strokeStyle = STROKE_DIM;
+            }
             ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(111, 156, 255, ${alpha})`;
-            ctx.lineWidth = 0.5;
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
             ctx.stroke();
           }
         }
@@ -133,12 +161,11 @@ function ParticleGrid() {
       animationId = requestAnimationFrame(draw);
     };
 
-    draw();
+    animationId = requestAnimationFrame(draw);
 
     return () => {
       cancelAnimationFrame(animationId);
       window.removeEventListener("resize", resize);
-      window.removeEventListener("mousemove", handleMouseMove);
     };
   }, []);
 

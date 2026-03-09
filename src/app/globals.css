@@ -95,7 +95,11 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
-    cursor: none;
+  }
+
+  /* Only hide cursor on fine pointer devices (mouse) — not touch */
+  @media (pointer: fine) {
+    body { cursor: none; }
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -720,6 +724,10 @@
   .fx-cursor-dot {
     display: none;
   }
+
+  /* Reduce GPU load on mobile */
+  .fx-orb { filter: blur(60px); }
+  .tilt-card { transform: none !important; }
 }
 
 /* ─── Scrollbar ─── */
@@ -738,4 +746,33 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(111, 156, 255, 0.5);
+}
+
+/* ─── Reduced Motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .fx-cursor-ring,
+  .fx-cursor-dot {
+    display: none;
+  }
+
+  body {
+    cursor: auto;
+  }
+
+  .fx-orb { animation: none; opacity: 0.15; }
+  .fx-grid { animation: none; }
+  .fx-scanline { animation: none; }
+  .text-shimmer { animation: none; background-size: 100% 100%; }
+  .glitch-text::before,
+  .glitch-text::after { animation: none; opacity: 0; }
+  .holo-card::before { animation: none; opacity: 0; }
 }

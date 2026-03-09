@@ -1,8 +1,8 @@
 "use client";
 
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Float, MeshDistortMaterial, MeshTransmissionMaterial, Environment } from "@react-three/drei";
-import { useRef, useMemo, Suspense } from "react";
+import { Float, MeshDistortMaterial } from "@react-three/drei";
+import { useRef, useMemo, Suspense, useState, useEffect } from "react";
 import * as THREE from "three";
 
 function IcosahedronMesh() {
@@ -104,18 +104,35 @@ function Scene() {
 }
 
 export function FloatingGeometry() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { rootMargin: "200px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="absolute inset-0 z-0 opacity-60">
-      <Canvas
-        camera={{ position: [0, 0, 8], fov: 45 }}
-        dpr={[1, 1.5]}
-        gl={{ antialias: true, alpha: true }}
-        style={{ background: "transparent" }}
-      >
-        <Suspense fallback={null}>
-          <Scene />
-        </Suspense>
-      </Canvas>
+    <div ref={containerRef} className="absolute inset-0 z-0 opacity-60">
+      {isVisible && (
+        <Canvas
+          camera={{ position: [0, 0, 8], fov: 45 }}
+          dpr={[1, 1.5]}
+          gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+          style={{ background: "transparent" }}
+        >
+          <Suspense fallback={null}>
+            <Scene />
+          </Suspense>
+        </Canvas>
+      )}
     </div>
   );
 }
+
