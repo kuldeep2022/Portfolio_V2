@@ -3,7 +3,7 @@
 import { Github, Linkedin, Mail, ArrowUpRight } from "lucide-react";
 
 const socialLinks = [
-  { name: "GitHub", href: "https://github.com", icon: <Github className="w-4 h-4" /> },
+  { name: "GitHub", href: "https://github.com/kuldeep2022", icon: <Github className="w-4 h-4" /> },
   { name: "LinkedIn", href: "https://linkedin.com/in/kuldeep-dave-011844157", icon: <Linkedin className="w-4 h-4" /> },
   { name: "Email", href: "mailto:davekuldeep98@gmail.com", icon: <Mail className="w-4 h-4" /> },
 ];
@@ -13,6 +13,19 @@ const navLinks = [
   { name: "Projects", href: "#projects" },
   { name: "Expertise", href: "#skills" },
   { name: "Contact", href: "#contact" },
+];
+
+const projectLinks = [
+  { name: "Chief of Staff AI", href: "https://chief-of-staff-ai.vercel.app" },
+  { name: "AgentFlow", href: "https://agentflow-bice.vercel.app" },
+  { name: "City Intelligence", href: "https://city-intelligence-ai.vercel.app" },
+  { name: "RepoMind AI", href: "https://repomind-ai-three.vercel.app" },
+  { name: "LifeTwin", href: "https://lifetwin-green.vercel.app" },
+  { name: "MemoryNet", href: "https://memorynet.vercel.app" },
+  { name: "Neural OS", href: "https://neural-os.vercel.app" },
+  { name: "Raft Live", href: "https://raft-live.vercel.app" },
+  { name: "Knowledge Graph 3D", href: "https://knowledge-graph-3d.vercel.app" },
+  { name: "Infra Copilot", href: "https://infra-copilot-delta.vercel.app" },
 ];
 
 export function Footer() {
@@ -27,9 +40,9 @@ export function Footer() {
 
       <div className="max-w-6xl mx-auto">
         {/* Main footer grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-16">
           {/* Brand */}
-          <div className="md:col-span-2">
+          <div className="md:col-span-4">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white">
                 KD
@@ -47,6 +60,8 @@ export function Footer() {
                 <a
                   key={link.name}
                   href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="p-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] text-neutral-500 hover:text-white hover:border-white/[0.12] transition-all duration-300"
                   aria-label={link.name}
                 >
@@ -57,7 +72,7 @@ export function Footer() {
           </div>
 
           {/* Navigation */}
-          <div>
+          <div className="md:col-span-2">
             <h4 className="text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-600 mb-5">
               Navigation
             </h4>
@@ -76,8 +91,30 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Back to top */}
-          <div>
+          {/* Projects */}
+          <div className="md:col-span-4">
+            <h4 className="text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-600 mb-5">
+              Projects
+            </h4>
+            <ul className="grid grid-cols-2 gap-x-4 gap-y-2.5">
+              {projectLinks.map((link) => (
+                <li key={link.name}>
+                  <a
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-neutral-500 hover:text-white transition-colors duration-300 flex items-center gap-1 group truncate"
+                  >
+                    <span className="truncate">{link.name}</span>
+                    <ArrowUpRight className="w-3 h-3 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Quick links */}
+          <div className="md:col-span-2">
             <h4 className="text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-600 mb-5">
               Quick Links
             </h4>
@@ -99,6 +136,16 @@ export function Footer() {
                   Start a Project
                 </a>
               </li>
+              <li>
+                <a
+                  href="https://github.com/kuldeep2022"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-neutral-500 hover:text-white transition-colors duration-300"
+                >
+                  GitHub Profile
+                </a>
+              </li>
             </ul>
           </div>
         </div>
@@ -109,7 +156,7 @@ export function Footer() {
             &copy; {new Date().getFullYear()} Kuldeep Dave. All rights reserved.
           </p>
           <p className="text-xs text-neutral-700 font-mono">
-            Designed & built with precision
+            10 live projects &middot; Designed & built with precision
           </p>
         </div>
       </div>

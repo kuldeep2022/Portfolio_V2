@@ -1,9 +1,10 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { ExternalLink, Github, ArrowUpRight, Sparkles } from "lucide-react";
 import dynamic from "next/dynamic";
 import type React from "react";
+import { useState } from "react";
 
 const FloatingGeometry = dynamic(
   () => import("@/components/three/FloatingGeometry").then((m) => m.FloatingGeometry),
@@ -277,7 +278,23 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
   );
 }
 
+const FILTER_TABS = [
+  { key: "all", label: "All Projects", count: 10 },
+  { key: "ai", label: "AI / ML", count: 5 },
+  { key: "infra", label: "Infrastructure", count: 3 },
+  { key: "viz", label: "Visualization", count: 2 },
+] as const;
+
+type FilterKey = (typeof FILTER_TABS)[number]["key"];
+
 export function Projects() {
+  const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
+
+  const filtered =
+    activeFilter === "all"
+      ? FEATURED_PROJECTS
+      : FEATURED_PROJECTS.filter((p) => p.category === activeFilter);
+
   return (
     <motion.section
       id="projects"
@@ -324,8 +341,8 @@ export function Projects() {
             className="max-w-md"
           >
             <p className="text-neutral-400 text-lg mb-2">
-              10 production-grade projects showcasing AI agents, distributed
-              systems, 3D visualization, and cloud infrastructure.
+              10 production-grade projects with live demos — AI agents,
+              distributed systems, 3D visualization, and cloud infrastructure.
             </p>
             <div className="flex items-center gap-2 text-xs font-mono text-neutral-600">
               <Sparkles className="w-3 h-3 text-indigo-400" />
@@ -334,46 +351,58 @@ export function Projects() {
           </motion.div>
         </div>
 
-        {/* Stats row */}
+        {/* Filter Tabs */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="flex flex-wrap gap-8 mb-14"
+          className="flex flex-wrap gap-2 mb-12"
         >
-          {[
-            { label: "Projects", value: "10" },
-            { label: "AI/ML", value: "6" },
-            { label: "Live Demos", value: "10" },
-            { label: "Tech Stack", value: "15+" },
-          ].map((stat) => (
-            <div key={stat.label} className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-white">{stat.value}</span>
-              <span className="text-xs font-mono text-neutral-600 uppercase tracking-wider">
-                {stat.label}
+          {FILTER_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveFilter(tab.key)}
+              className={`relative px-5 py-2.5 rounded-full text-xs font-medium tracking-wide transition-all duration-300 ${
+                activeFilter === tab.key
+                  ? "text-white"
+                  : "text-neutral-500 hover:text-neutral-300 border border-white/[0.06] bg-white/[0.02]"
+              }`}
+            >
+              {activeFilter === tab.key && (
+                <motion.div
+                  layoutId="activeProjectFilter"
+                  className="absolute inset-0 bg-white/[0.1] border border-white/[0.15] rounded-full"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10 flex items-center gap-2">
+                {tab.label}
+                <span className="text-[10px] text-neutral-600 font-mono">{tab.count}</span>
               </span>
-            </div>
+            </button>
           ))}
         </motion.div>
 
-        {/* Project Grid — first 4 featured (2-col) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
-          {FEATURED_PROJECTS.slice(0, 4).map((project, index) => (
-            <ProjectCard key={project.title} project={project} index={index} />
-          ))}
-        </div>
-
-        {/* Remaining 6 projects (3-col) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {FEATURED_PROJECTS.slice(4).map((project, index) => (
-            <ProjectCard
-              key={project.title}
-              project={project}
-              index={index + 4}
-            />
-          ))}
-        </div>
+        {/* Project Grid */}
+        <LayoutGroup>
+          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <AnimatePresence mode="popLayout">
+              {filtered.map((project, index) => (
+                <motion.div
+                  key={project.title}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <ProjectCard project={project} index={index} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        </LayoutGroup>
       </div>
     </motion.section>
   );

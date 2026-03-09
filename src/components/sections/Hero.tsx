@@ -259,19 +259,19 @@ export function Hero() {
           className="mt-10 flex flex-wrap justify-center gap-4"
         >
           <a
-            href="#contact"
+            href="#projects"
             data-magnet
             className="group relative px-8 py-3.5 rounded-full text-sm font-semibold bg-white text-black overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <span className="relative z-10 group-hover:text-white transition-colors duration-300">Start a Project</span>
+            <span className="relative z-10 group-hover:text-white transition-colors duration-300">View 10 Live Projects</span>
           </a>
           <a
-            href="#experience"
+            href="#contact"
             data-magnet
             className="px-8 py-3.5 rounded-full text-sm font-semibold border border-white/[0.1] text-white hover:border-white/[0.3] hover:bg-white/[0.03] transition-all duration-300"
           >
-            View Experience
+            Start a Project
           </a>
         </motion.div>
       </motion.div>
